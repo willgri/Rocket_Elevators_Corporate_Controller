@@ -54,20 +54,6 @@ namespace ConsoleApp1
 
         }
 
-        public Column find_column(int RequestFloor)
-        {
-            Column goodColumn = null;
-            foreach (Column column in column_list)
-            {
-                if (column.range_start >= RequestFloor && column.range_stop <= RequestFloor)
-                {
-                    goodColumn = column;
-                }
-            }
-            return goodColumn;
-        }
-
-
         // calculate range floor for each column
         public int Calculate_column()
         {
@@ -84,6 +70,21 @@ namespace ConsoleApp1
             return modulo_extra_floor;
         }
 
+    
+        // determine the good column 
+        public Column find_column(int RequestFloor)
+        {            
+            Column goodColumn = null;
+            foreach (Column column in column_list)
+            {
+                if (column.range_start <= RequestFloor && column.range_stop >= RequestFloor)
+                {
+                    goodColumn = column;
+                }
+            }
+            return goodColumn;
+        }
+        
 
         // nearest elevator calcul !!!!!
         public Elevator Nearest_elevator(int nb_floor, int current_floor, int RequestFloor)
@@ -113,7 +114,6 @@ namespace ConsoleApp1
 
             foreach (Elevator elevator in column.elevator_list)
             {
-
                 if (nb_floor == elevator.current_floor && elevator.Status == "Stopped")
                 {
                     GoodElevator = elevator;
@@ -141,7 +141,27 @@ namespace ConsoleApp1
                 }
 
             }
+            
             return GoodElevator;
+        }
+
+
+
+        // Request button !!!inside!!! elevator 
+        public Elevator RequestFloor(Elevator elevator, int nb_floor)
+        {
+            elevator.floor_list.Add(nb_floor);
+            elevator.operate(nb_floor);
+            return elevator;
+        }
+
+
+        // request panel !!!outside!!! elevator
+        public void RequestElevator(int nb_floor, int RequestFloor)
+        {
+            Elevator best_elevator = AssignElevator(nb_floor, RequestFloor);
+            Console.Write(best_elevator);
+            this.RequestFloor(best_elevator, nb_floor);
         }
 
 
@@ -169,34 +189,13 @@ namespace ConsoleApp1
 
         }
 
-
-        // Request button !!!inside!!! elevator 
-        public Elevator RequestFloor(Elevator elevator, int nb_floor)
-        {
-            elevator.floor_list.Add(nb_floor);
-            elevator.operate(nb_floor);
-            return elevator;
-        }
-
-
-        // request panel !!!outside!!! elevator
-        public void RequestElevator(int nb_floor, Elevator RequestFloor)
-        {
-            Elevator best_elevator = AssignElevator(nb_floor, RequestFloor);
-            Console.Write(best_elevator);
-            this.RequestFloor(best_elevator, nb_floor);
-            //best_elevator.floor_list.Add(nb_floor);
-            //best_elevator.operate(nb_floor);
-            //return best_elevator;
-        }
-
     }
 
 
     // -----------------------------------------------------------------------------class elevator in column in controller
     public class Elevator
     {
-        public string best_elevator;
+        public int best_elevator;
         public string Status;
         public int current_floor;
         public string Direction;
@@ -227,11 +226,11 @@ namespace ConsoleApp1
         public void move_show()
         {
             string Status = "";
-
             if (this.floor_list[0] > this.current_floor)
             {
-                while (floor_list[0] != current_floor)
+                while (this.floor_list[0] != this.current_floor)
                 {
+                    
                     current_floor += 1;
                     Console.Write("current floor", current_floor);
                     Status = "Moving up";
@@ -243,7 +242,7 @@ namespace ConsoleApp1
 
             else if (this.floor_list[0] < this.current_floor)
             {
-                while (floor_list[0] != current_floor)
+                while (this.floor_list[0] != this.current_floor)
                 {
                     current_floor -= 1;
                     Console.Write("current floor", current_floor);
@@ -267,7 +266,6 @@ namespace ConsoleApp1
         {
             //Console.Write("operate_elevator", GoodElevator, nb_floor);
             //Console.Write(GoodElevator)
-
             this.move_show();
             this.Open_door();
             System.Threading.Thread.Sleep(800);
@@ -284,18 +282,19 @@ namespace ConsoleApp1
     {
         static void Main(string[] args)
         {
-
             Controller controller_1 = new Controller(85, 20, 4);
-            //controller_1.column_list[1].elevator_list[0].current_floor = 1;
-            controller_1.AssignElevator(12);
-
+            controller_1.column_list[1].elevator_list[0].current_floor = 1;
+            controller_1.AssignElevator(1, 24);
+            controller_1.AssignElevator(1, 28);
+            Console.WriteLine("hello");
 
             Console.WriteLine(controller_1.column_list[0]);
             Console.WriteLine(controller_1.column_list[0].elevator_list[0]);
 
 
-            Console.ReadKey();
+
         }
     }
 
 }
+
